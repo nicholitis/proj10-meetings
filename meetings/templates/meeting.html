@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html lang="en"> <head>
+<title>Appointments</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" type="text/css"
+     href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
+
+
+<link rel="stylesheet" type="text/css"
+    href="/static/css/busy.css"/>
+
+<!-- jquery from a content distribution network; probably cached -->
+<script type="text/javascript"
+     src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js">
+</script>
+
+<!-- Ideally the rest of our javascript dependencies would be
+     bundled and minified with 'browserify', but I've found that
+     it difficult to handle browserify dependencies for class
+     projects.  So, we'll pick up moment and a date range picker
+     from CDNs instead.
+-->
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
+
+</head>
+
+<body>
+<div class="container">
+
+<h1>Busy and Free times</h1>
+<h2>Meeting Created</h2>
+
+<!--
+  -- If there are any warnings or other messages from a prior action,
+  -- they appear above the rest of the content, just until the next
+  -- action.
+  -->
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<h3>You Suggested Meeting Times</h3>
+{% for time in session.meet_info.times %}
+  <p>{{time.name}}:
+  BEGINS: {{time.start | fmtdate}} {{time.start | fmttime}}
+  ENDS: {{time.end | fmtdate}} {{time.end | fmttime}}</p>
+{% endfor %}
+
+<div class="row">
+  <h4>Share this link with meeting participants</h4>
+</div>
+<p><a href="{{session.link}}" target="_blank">{{session.link}}</a></p>
+
+<div class="row">
+  <h4>Save this link to finalize the meeting</h4>
+</div>
+<p><a href="{{session.arranger_link}}" target="_blank">{{session.arranger_link}}</a></p>
+
+</div>  <!-- container (for bootstrap) -->
+</body>
+</html>

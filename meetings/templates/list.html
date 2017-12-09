@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html lang="en"> <head>
+<title>Appointments</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" type="text/css"
+     href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
+
+
+<link rel="stylesheet" type="text/css"
+    href="/static/css/busy.css"/>
+
+<!-- jquery from a content distribution network; probably cached -->
+<script type="text/javascript"
+     src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js">
+</script>
+
+<!-- Ideally the rest of our javascript dependencies would be
+     bundled and minified with 'browserify', but I've found that
+     it difficult to handle browserify dependencies for class
+     projects.  So, we'll pick up moment and a date range picker
+     from CDNs instead.
+-->
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
+
+</head>
+
+<body>
+<div class="container">
+
+<h1>Busy and Free times</h1>
+<h2>Choose the free times you want to schedule a meeting</h2>
+
+<!--
+  -- If there are any warnings or other messages from a prior action,
+  -- they appear above the rest of the content, just until the next
+  -- action.
+  -->
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+
+
+    <!--
+    Show the calendar list (if we have it).
+    Displays a checkbox next to each calendar.
+    When user clicks "Find Busy Times" button,
+    to a page that lists the busy times.
+    -->
+
+
+
+<!--sorry for how ugly the middle of this jinja gets. formatting is hard-->
+
+<form action="/initmeeting" method="post">
+{% if g.ids is defined %}
+  {% for id in g.ids %}
+    <h3>{{id}}</h3>
+    {% if g.events is defined %}
+      {% for cals in g.events %}
+        {% if cals.id == id %}
+          <h5>Events</h5>
+          {% if cals.events == [] or cals.events == 'no events' %}
+            <p class="text-danger">No events!</p>
+          {% else %}
+            {% for event in cals.events %}
+            <p>
+              {{event.summary}}
+              BEGINS: {{event.start | fmtdate}} {{event.start | fmttime}}
+              ENDS: {{event.end | fmtdate}} {{event.end | fmttime}}
+            </p>
+            {% endfor %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% if g.free is defined %}
+      {% for free in g.free %}
+        {% if free.id == id %}
+        <h5>Free Times</h5>
+        {% for time in free.free_times %}<br>
+        <input type="checkbox" name="free" value="{{ time }}" />
+        BEGINS: {{time.start | fmtdate}} {{time.start | fmttime}}
+        ENDS: {{time.end | fmtdate}} {{time.end | fmttime}}
+        {% endfor %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    <br>
+  {% endfor %}
+{% endif %}
+<button type="submit">Create Meeting</button>
+</form>
+
+</div>  <!-- container (for bootstrap) -->
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html lang="en"> <head>
+<title>Free Times</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" type="text/css"
+     href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"
+/>
+
+
+<link rel="stylesheet" type="text/css"
+    href="/static/css/busy.css"
+/>
+
+<!-- jquery from a content distribution network; probably cached -->
+<script type="text/javascript"
+     src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js">
+</script>
+
+<!-- Ideally the rest of our javascript dependencies would be
+     bundled and minified with 'browserify', but I've found that
+     it difficult to handle browserify dependencies for class
+     projects.  So, we'll pick up moment and a date range picker
+     from CDNs instead.
+-->
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
+
+</head>
+<body>
+<div class="container">
+  <h1>Meeting Arranger View</h1>
+  <h4>View Responses</h4>
+  <form action="/finalize" method="POST">
+    {% for time in session.times %}
+      <p>
+        <input type="radio" name="times" value="{{time}}"/>
+        BEGINS: {{time.start | fmtdate}} {{time.start | fmttime}}
+        ENDS: {{time.end | fmtdate}} {{time.end | fmttime}}
+        RESPONSES:
+        {% for name in time.responses %}
+        {{name}}
+        {% endfor %}
+      </p>
+    {% endfor %}
+  <button type="submit">Finalize Meeting</button>
+</form>

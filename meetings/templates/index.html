@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html lang="en"> <head>
+<title>Appointments</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" type="text/css"
+     href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
+
+
+<link rel="stylesheet" type="text/css"
+    href="/static/css/busy.css"/>
+
+<!-- jquery from a content distribution network; probably cached -->
+<script type="text/javascript"
+     src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js">
+</script>
+
+<!-- Ideally the rest of our javascript dependencies would be
+     bundled and minified with 'browserify', but I've found that
+     it difficult to handle browserify dependencies for class
+     projects.  So, we'll pick up moment and a date range picker
+     from CDNs instead.
+-->
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
+
+</head>
+
+<body>
+<div class="container">
+
+<h1>Busy times</h1>
+
+<!--
+  -- If there are any warnings or other messages from a prior action,
+  -- they appear above the rest of the content, just until the next
+  -- action.
+  -->
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<h2>Date range</h2>
+  <form action="/setrange" method="post">
+  <input type="text" name="daterange" size="12"
+    {% if session.daterange is defined %}
+         value="{{session.daterange}}"
+    {% endif %}
+     class="pull-down"
+     style="background: #fff; cursor: pointer; padding: 5px 10px;
+     border: 1px solid #ccc; width: 12em" >
+  <script type="text/javascript">
+  $(function() {
+  $('input[name="daterange"]').daterangepicker(
+    {    ranges: {
+           'Today': [moment(), moment()],
+           'Tomorrow':[moment().add(1, 'days'),
+                       moment().add(1, 'days')],
+           'This week':[moment(), moment().endOf('week')],
+           'Next week':[moment().add(7, 'days').startOf('week'),
+                        moment().add(7, 'days').endOf('week')],
+           'This month':[moment(), moment().endOf('month')],
+           'Within two weeks':[moment(),moment().add(15, 'days')]
+        }}
+       );
+    });
+  </script>
+
+<br />
+<h2>Time range</h2>
+<input type="time" name="startTime" value="07:00:00">
+to
+<input type="time" name="endTime" value="20:00:00">
+
+<br /><input type="submit" value="Choose" />
+</form>
+
+    <!--
+    Show the calendar list (if we have it).
+    Displays a checkbox next to each calendar.
+    When user clicks "Find Busy Times" button,
+    to a page that lists the busy times.
+    -->
+
+
+{% if g.calendars is defined  %}
+<form action="/selected" method="post">
+  <div class="row">
+  {% for cal in g.calendars if cal.selected %}
+          <div class="col-md-4">
+            <input type="checkbox" name="checkbox" value="{{cal.id}}">
+            {{ cal.summary }}
+          </div>
+         {% if loop.index is divisibleby 3 %}
+          </div>
+          <div class="row">
+         {% endif %}
+  {% endfor %}
+  </div>
+<button type="submit">Get Busy Times</button>
+</form>
+{% endif %}
+
+<!--sorry for how ugly the middle of this jinja gets. formatting is hard-->
+{% if g.ids is defined %}
+  {% for id in g.ids %}
+  <h3>Events:</h3>
+  {{ id }}
+    {% for event in g.events %}
+      {% if event.id == id %}
+      <div class="col-md-4">
+        {{ event.summary }}
+      </div>
+        {% if loop.index is divisibleby 1 %}
+          <div class="row">
+            {% for thing in event.events %}
+              <div class="col-md-4">
+              {{ thing.summary }}
+              </div>
+              <div class="col-md-4">
+              Start: {{ thing.start | fmtdate }} {{ thing.start | fmttime }}
+              </div>
+              <div class="col-md-4">
+              End: {{ thing.end | fmtdate }} {{ thing.end | fmttime }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endif %}
+      <form action="/initmeeting" method="post">
+      {% if g.free is defined %}
+                {% for time in g.free %}
+                    {% if time.id == event.id %}
+                    <br>
+                        <h5> FREE TIMES </h5>
+                        <h6 class="text-info"> Select the times you wish to create a meeting in </h6>
+                        {% for event in  time.free_times %}
+      <div class="row">
+                          <input type="checkbox" name="meetings" value="{{event}}">
+                            BEGINS: {{ event.start | fmtdate}} {{ event.start | fmttime }} ENDS: {{event.end | fmtdate}} {{event.end | fmttime}}
+      </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            <button type="submit" name="initmeeting">Create Meeting</button>
+          </form>
+
+    {% endfor %}
+  {% endfor %}
+{% endif %}
+
+</div>  <!-- container (for bootstrap) -->
+</body>
+</html>
